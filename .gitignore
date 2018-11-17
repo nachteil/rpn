@@ -1,0 +1,14 @@
+# gradle
+build/
+.gradle/
+gradle/wrapper/
+
+# build
+*.class
+
+# idea
+out/
+.idea/
+*.iml
+*.ipr
+*.iws
