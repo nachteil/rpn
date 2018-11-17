@@ -1,33 +1,40 @@
 package io.dabrowa.rpn;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Optional;
-import java.util.Stack;
 
-public class RPNExpression {
+class RPNExpression {
 
-    private final String input;
+    private final Operators operators;
+    private final Lazy<String[]> inputSplit;
 
-    public RPNExpression(final String input) {
-        this.input = input;
+    private int position;
+
+    public RPNExpression(final String expressionString, final Operators operators) {
+        this.inputSplit = new Lazy<>(() -> expressionString.split(" "));
+        this.position = 0;
+        this.operators = operators;
     }
 
-    public int value() {
-        final Stack<Integer> stack = new Stack<>();
-        final InputString inputParser = new InputString(input);
-        Optional<Token> tokenOpt;
-        while((tokenOpt = inputParser.nextToken()).isPresent()) {
-            Token token = tokenOpt.get();
-            if(token.isNumber()) {
-                stack.push(token.numericValue());
-            } else {
-                Integer right = stack.pop();
-                Integer left = stack.pop();
-                stack.push(token.perform(left, right));
-            }
+    Optional<TokenAction> nextToken() {
+        if(parsedWholeInput()) {
+            return Optional.empty();
         }
-        if(stack.size() != 1) {
-            throw new IllegalStateException("Malformed input - one item should be left on stack");
+        final int nextPosition = position;
+        position += 1;
+        return actionFromToken(inputSplit.get()[nextPosition]);
+    }
+
+    private boolean parsedWholeInput() {
+        return position == inputSplit.get().length;
+    }
+
+    private Optional<TokenAction> actionFromToken(String token) {
+        if(StringUtils.isNumeric(token)) {
+            return Optional.of(new NumberToken(token));
+        } else {
+            return Optional.of(new OperatorToken(operators.fromString(token)));
         }
-        return stack.pop();
     }
 }

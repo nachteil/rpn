@@ -1,32 +1,20 @@
 package io.dabrowa.rpn;
 
+import java.util.Stack;
 import java.util.function.IntBinaryOperator;
 
-class OperatorToken implements Token {
+class OperatorToken implements TokenAction {
 
     private final IntBinaryOperator operator;
 
-    public OperatorToken(IntBinaryOperator operator) {
+    OperatorToken(IntBinaryOperator operator) {
         this.operator = operator;
     }
 
     @Override
-    public boolean isNumber() {
-        return false;
-    }
-
-    @Override
-    public boolean isOperator() {
-        return true;
-    }
-
-    @Override
-    public int numericValue() {
-        throw new UnsupportedOperationException("This is an operator, not a number");
-    }
-
-    @Override
-    public int perform(int left, int right) {
-        return operator.applyAsInt(left, right);
+    public void perform(Stack<Integer> stack) {
+        int right = stack.pop();
+        int left = stack.pop();
+        stack.push(operator.applyAsInt(left, right));
     }
 }
